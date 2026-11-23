@@ -1,0 +1,7 @@
+# Test and profiling output
+coverage.out
+*.prof
+*.test
+
+# macOS
+.DS_Store

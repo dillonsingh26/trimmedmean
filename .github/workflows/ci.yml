@@ -1,0 +1,32 @@
+# Continuous integration: GitHub runs these checks on every push and pull
+# request. The green check or red X appears next to each commit on GitHub.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - name: Check formatting
+        run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Unit tests and examples, with the race detector
+        run: go test -race -cover ./...
+
+      - name: Fuzz for 30 seconds
+        run: go test -run '^$' -fuzz FuzzTrimmedMean -fuzztime 30s .
+
+      - name: Benchmark (one pass, to catch errors and record timings)
+        run: go test -run '^$' -bench . -benchmem -benchtime 1x .
